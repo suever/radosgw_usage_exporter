@@ -8,6 +8,7 @@ import logging
 import json
 import argparse
 import os
+import socket
 from awsauth import S3Auth
 from prometheus_client import start_http_server
 from collections import defaultdict, Counter
@@ -611,7 +612,12 @@ def main():
                 args.tag_list,
             )
         )
-        start_http_server(args.port, addr="::")
+
+        server_options = {}
+        if socket.has_dualstack_ipv6():
+            server_options["addr"] = "::"
+
+        start_http_server(args.port, **server_options)
         logging.info(("Polling {0}. Serving at port: {1}".format(args.host, args.port)))
         while True:
             time.sleep(1)
